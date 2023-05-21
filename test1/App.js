@@ -1,7 +1,8 @@
 import { StatusBar } from "expo-status-bar";
-import { ImageBackground,ToastAndroid, View, Text, Pressable, StyleSheet } from 'react-native';
+import { ToastAndroid, View, Text, Pressable, StyleSheet } from 'react-native';
+
 import * as ImagePicker from 'expo-image-picker';
-import { useState ,useRef} from 'react';
+import { useState ,useRef,useEffect} from 'react';
 import CircleButton from './components/CircleButton';
 import IconButton from './components/IconButton';
 import EmojiPicker from "./components/EmojiPicker";
@@ -14,10 +15,21 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 
+import Slider from 'react-native-swipe-slider';
+
+
+// import { BarCodeScanner } from 'expo-barcode-scanner';
+
+
+
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Button';
+
+import * as Location from 'expo-location';
+
+
 const PlaceholderImage = require('./assets/images/background-image.png');
-const image = { uri: "https://docs.expo.dev/static/images/tutorial/splash.png" };
+//const image = { uri: "https://docs.expo.dev/static/images/tutorial/splash.png" };
 
 function MyCheckbox({
   checked,
@@ -49,28 +61,28 @@ function MyCheckbox({
     </Pressable>
   );
 }
+
+
 export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAppOptions, setShowAppOptions] = useState(false);
-  
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pickedEmoji, setPickedEmoji] = useState(null);
   const [checked, setChecked] = useState(false);
-
-  // ...rest of the code remains same
- 
-    const [status, requestPermission] = MediaLibrary.usePermissions();
-    // ...rest of the code remains same
+  const [value, setValue] = useState(50);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [status, requestPermission] = MediaLibrary.usePermissions();
+  const imageRef = useRef();
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+    
+  const [timer, setTimer] = useState(0);
+  const startTime = new Date();
   
-    if (status === null) {
-      requestPermission();
-    }
-    function showToast() {
-      ToastAndroid.show('Toast Request!', ToastAndroid.SHORT);
-    }
+  
+  
 
-       const imageRef = useRef();
-      
   
   const onAddSticker = () => {
     setIsModalVisible(true);
@@ -114,7 +126,65 @@ export default function App() {
       
     }
   };
+  /*
+  useEffect(() => {
+    const getBarCodeScannerPermissions = async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
+    };
+
+    getBarCodeScannerPermissions();
+  }, []);
+
+  const handleBarCodeScanned = ({ type, data }) => {
+    setScanned(true);
+    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+  };
+
+  if (hasPermission === null) {
+    return <Text>Requesting for camera permission</Text>;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
   
+  if (status === null) {
+    requestPermission();
+  }*/
+
+  function showToast() {
+    ToastAndroid.show("Toast", ToastAndroid.SHORT);
+  }
+  const getElapsedTime = () => {
+      setTimer((new Date().getTime() - startTime.getTime()) / 1000);
+//      useEffect();
+  };
+//setInterval(getElapsedTime, 2000);
+
+  /*{}*/
+  useEffect(() => {
+    (async () => {
+      
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+   text = JSON.stringify(location);
+  AddText (text.ToString()  , "test")
+  }
+ // setInterval(useEffect, 2000);
   return (    
     <GestureHandlerRootView style={styles.container}> 
     <View style={styles.container}>
@@ -147,7 +217,6 @@ export default function App() {
         ) : (
       <View style={styles.footerContainer}>
           <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
-          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
           <IconButton icon="save-alt" label="Toast" onPress={showToast} />
 
       </View>
@@ -163,7 +232,30 @@ export default function App() {
         />
         <Text style={styles.checkboxLabel}>{`⬅️ Click!`}</Text>
       </View>
-      <StatusBar style="dark"/>
+      <Slider
+          min={0}
+          max={100}
+          value={value}
+          onChange={value => setValue(value)}
+          changeEventThrottle={100}
+          style={styles.slider}
+          backgroundColor={'#e5e5e5'}
+          barColor={'#fca311'}
+        >          
+        </Slider>
+        <Text>{value}</Text>
+        {/*
+        {scanned && <Button theme="mystyle" label="Scan again" onPress={() => setScanned(false)} />}
+        <View style={styles.scanner_area}>
+        <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={StyleSheet.absoluteFillObject}
+        />
+        </View>*/}
+        
+
+        <StatusBar backgroundColor= '#00f' barStyle="dark-content" hidden={false} translucent={false}/>
+      <Text style={styles.paragraph}>{text}</Text>
     </GestureHandlerRootView>
 
   );
@@ -244,4 +336,26 @@ const styles = StyleSheet.create({
     fontWeight: 500,
     fontSize: 18,
   },
+  middleButton: {
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: '#ccc',
+  },
+  slider: {
+    justifyContent: 'center',
+    width: '100%',
+    height: 64,
+    marginTop: 16
+  },
+  icon: {
+    marginHorizontal: 16
+  },
+    scanner_area: {
+    justifyContent: 'center',
+    width: '100%',
+    height: 150,
+    marginTop: 6
+  },
+
 });
+

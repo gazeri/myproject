@@ -22,6 +22,18 @@ export default function Button({ label, theme,onPress }) {
       </View>
       );
     }
+    if (theme === "mystyle") {
+      return (
+        <View style={styles.buttonContainer2}>
+          <Pressable
+            style={[styles.button, { backgroundColor: "#00f"}]}
+            onPress={onPress}
+            >
+            <Text style={[styles.buttonLabel2]}>{label}</Text>
+          </Pressable>
+      </View>
+      );
+    }
   
     return (
       <View style={styles.buttonContainer}>
@@ -40,7 +52,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 3,
-
+  },
+    buttonContainer2: {
+      width: 100,
+      height: 40,
+      marginHorizontal: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 1,
+  
   },
   button: {
     borderRadius: 10,
@@ -57,6 +77,11 @@ const styles = StyleSheet.create({
     color: '#f0f',
     fontSize: 18,
     backgroundColor: "#0ff",
+  },
+  buttonLabel2: {
+    color: '#fff',
+    fontSize: 14,
+    backgroundColor: "#00f",
   },
 });
 
